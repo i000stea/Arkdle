@@ -1,0 +1,11 @@
+{
+  "name": "arkdle",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "screenshot-server": "node server/screenshot-server.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.49.1"
+  }
+}

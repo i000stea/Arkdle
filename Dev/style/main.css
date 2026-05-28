@@ -1,0 +1,2102 @@
+:root {
+    --ark-titleSpace: 50px;
+    --ark-subSpace: 20px;
+    --title-cor: #333d;
+    --box-true: #55beff6d;
+    --box-fuzzyA: #ffd678bf;
+    --box-fuzzyB: #f19c77;
+    --box-false: #7c7c7c8a;
+    /* 随机出题模式主题混合：0=每日，1=随机；由 JS 帧间 lerp 写入 */
+    --ark-theme-t: 0;
+
+    /* 通用半透明（8 位十六进制 #RRGGBBAA） */
+    --ark-black-03: #00000008;
+    --ark-black-05: #0000000d;
+    --ark-black-06: #0000000f;
+    --ark-black-08: #00000014;
+    --ark-black-10: #0000001a;
+    --ark-black-12: #0000001f;
+    --ark-black-14: #00000024;
+    --ark-black-15: #00000026;
+    --ark-black-16: #00000029;
+    --ark-black-18: #0000002e;
+    --ark-black-20: #00000033;
+    --ark-black-30: #0000004c;
+    --ark-black-42: #0000006b;
+    --ark-black-50: #00000080;
+    --ark-white-05: #ffffff0d;
+    --ark-white-20: #ffffff33;
+    --ark-white-95: #fffffff2;
+    --ark-white-97: #fffffff7;
+
+    --ark-cyan-30: #4ef5ff4c;
+    --ark-accent-22: #45c1f738;
+    --ark-accent-35: #45c1f759;
+    --ark-accent-50: #45c1f780;
+    --ark-blue-10: #4e8cff1a;
+    --ark-blue-20: #4e8cff33;
+
+    --ark-random-purple-22: #c896ff38;
+    --ark-random-coral-20: #ffb9a533;
+
+    --ark-tooltip-bg: #fffcf5fa;
+
+    --ark-nav-glow: #667eea4c;
+    --ark-modal-backdrop: #0f172a73;
+
+    --btn-base: #5ea7f4;
+    --btn-random: #d48cff;
+}
+
+/* 全局样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    background-color: color-mix(in srgb, #ffffff calc((1 - var(--ark-theme-t)) * 100%), #f5f0fc calc(var(--ark-theme-t) * 100%));
+    color: #333333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    /* 允许使用 ::before 叠加背景 */
+    min-height: 100vh;
+    min-height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    overflow: hidden;
+    background-image:
+        radial-gradient(circle at 20% 30%, color-mix(in srgb, #94f4ff33 calc((1 - var(--ark-theme-t)) * 100%), #c4a6ff55 calc(var(--ark-theme-t) * 100%)) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, color-mix(in srgb, #ffce8f33 calc((1 - var(--ark-theme-t)) * 100%), #ffb0a855 calc(var(--ark-theme-t) * 100%)) 0%, transparent 50%);
+}
+
+/* 全局倾斜灰色点阵背景 */
+body::before {
+    content: "";
+    position: fixed;
+    top: -50vh;
+    left: -50vw;
+    width: 200vw;
+    height: 200vh;
+    pointer-events: none;
+    z-index: 0;
+
+    background-image: radial-gradient(circle, color-mix(in srgb, #8882 calc((1 - var(--ark-theme-t)) * 100%), #9a88aa55 calc(var(--ark-theme-t) * 100%)) 2px, transparent 2px);
+    background-size: 26px 22px;
+    transform: rotate(10deg);
+}
+
+/* 随机出题模式：额外柔光层（随 --ark-theme-t 与底色同步） */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: calc(var(--ark-theme-t) * 1);
+    background-image:
+        radial-gradient(circle at 14% 22%, var(--ark-random-purple-22) 0%, transparent 42%),
+        radial-gradient(circle at 88% 78%, var(--ark-random-coral-20) 0%, transparent 45%);
+}
+
+/* 无 color-mix 时：底色与光点保持原版，随机模式仅靠 ::after 叠色过渡 */
+@supports not (color: color-mix(in srgb, white, black)) {
+    body {
+        background-color: #ffffff;
+        background-image:
+            radial-gradient(circle at 20% 30%, #94f4ff33 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, #ffce8f33 0%, transparent 50%);
+    }
+
+    body::before {
+        background-image: radial-gradient(circle, #8882 2px, transparent 2px);
+    }
+}
+
+header {
+    text-align: center;
+    width: 100%;
+    z-index: 1;
+    flex-shrink: 0;
+    /* 确保内容在背景之上 */
+}
+
+.logo {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px var(--ark-cyan-30);
+}
+
+.title {
+    margin-top: 8px;
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--title-cor);
+    background-clip: text;
+    display: inline-block;
+    /* 使元素宽度随文本变化 */
+    letter-spacing: var(--ark-titleSpace);
+    text-indent: var(--ark-titleSpace);
+
+}
+
+header .sub-label {
+    letter-spacing: var(--ark-subSpace);
+    text-indent: var(--ark-subSpace);
+}
+
+.sub-label {
+    font-size: 1rem;
+    text-align: center;
+    color: #666;
+}
+
+.sub-info {
+    font-size: 0.65rem;
+    color: #8888;
+    margin-top: 2px;
+}
+
+.container {
+    width: 100%;
+    padding: 10px;
+    z-index: 1;
+    flex: 1 1 0%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* 使footer固定在页面底部并从底部排序 */
+footer {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px 0;
+    flex-shrink: 0;
+    border-top: 1px solid var(--ark-black-10);
+    /* 内容层级高于背景 */
+    /* 从底部排序的元素顺序 */
+}
+
+/* 确保底部元素顺序从底部开始 */
+footer>* {
+    text-align: center;
+}
+
+#btn-random-topic {
+    margin: 4px 0;
+}
+
+#btn-daily-topic {
+    margin: 4px 0;
+}
+
+.footer-mode-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+}
+
+#attempts {
+    font-weight: 600;
+    color: #bebebe;
+    margin: 5px 0;
+}
+
+.copyright {
+    color: #8888;
+    font-size: 0.6rem;
+}
+
+.creator-credit {
+    margin-top: 10px;
+    color: #8888;
+    font-size: 0.6rem;
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+}
+
+.creator-credit .creator-label {
+    color: #9a9a9a;
+    font-weight: 500;
+}
+
+.creator-credit .creator-name {
+    color: #5c5c5c;
+    font-weight: 500;
+}
+
+.creator-credit .creator-sep {
+    color: #b8b8b8;
+    font-weight: 400;
+    padding: 0 1px;
+}
+
+/* 输入区域样式 */
+.input-section {
+    margin-top: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.input-section-main {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.input-section-extra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.btn-show-answer {
+    height: 32px;
+    padding: 0 16px;
+    font-size: 0.9rem;
+}
+
+.btn-rabbit-toggle {
+    height: 32px;
+    padding: 0 18px;
+    /* border-radius: 6px; */
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: 1px solid var(--ark-accent-50);
+    background: var(--ark-accent-22);
+    color: #157aa8;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-rabbit-toggle:hover {
+    background: var(--ark-accent-35);
+}
+
+.btn-rabbit-toggle--off {
+    border-color: var(--ark-black-12);
+    background: var(--ark-black-05);
+    color: #666;
+}
+
+.btn-rabbit-toggle--off:hover {
+    background: var(--ark-black-08);
+}
+
+/* 按钮容器样式 */
+.buttons-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* 输入框与下拉菜单容器 */
+.input-with-suggestions {
+    position: relative;
+    display: inline-block;
+}
+
+/* 下拉菜单容器样式 */
+.suggestions-container {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    background-color: var(--ark-white-95);
+    border: 1px solid var(--ark-black-20);
+    border-radius: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 4px 12px var(--ark-black-10);
+    display: none;
+}
+
+/* 建议项样式 */
+.suggestion-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid var(--ark-black-10);
+}
+
+.suggestion-item:hover {
+    background-color: var(--ark-blue-10);
+}
+
+/* 键盘选择的建议项样式 */
+.suggestion-item.selected {
+    background-color: var(--ark-blue-20);
+    border-left: 3px solid #4e8cff;
+    padding-left: 9px;
+    /* 调整内边距以抵消左边框宽度 */
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+/* 下拉菜单滚动条样式 */
+.suggestions-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.suggestions-container::-webkit-scrollbar-track {
+    background-color: var(--ark-black-05);
+    border-radius: 3px;
+}
+
+.suggestions-container::-webkit-scrollbar-thumb {
+    background-color: var(--ark-black-20);
+    border-radius: 3px;
+}
+
+.suggestions-container::-webkit-scrollbar-thumb:hover {
+    background-color: var(--ark-black-30);
+}
+
+/* 输入框样式 */
+#input-name {
+    background-color: var(--ark-black-03);
+    border: 1px solid var(--ark-black-20);
+    border-radius: 6px;
+    color: #333333;
+    padding: 8px 12px;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s ease;
+    min-width: 200px;
+    max-width: 100%;
+}
+
+#input-name:focus {
+    background-color: var(--ark-black-05);
+    border-color: #4e8cff;
+    box-shadow: 0 0 0 2px var(--ark-blue-20);
+}
+
+#input-name::placeholder {
+    color: #999;
+}
+
+#input-name:disabled,
+#btn-confirm:disabled,
+#btn-random-select:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* 表头：在滚动容器内纵向吸顶，随容器横向滚动一起平移 */
+.guessing-item.guessing-heads {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    margin-top: 0;
+    background: var(--ark-white-97);
+    box-shadow: 0 2px 6px var(--ark-black-06);
+    border-bottom: solid #57575729;
+}
+
+.guessing-info--compact {
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+}
+
+/* 游戏网格样式 */
+.guessing-item {
+    display: grid;
+    gap: 8px;
+    margin: 8px 0;
+    justify-items: center;
+}
+
+.guessing-info {
+    display: grid;
+    text-align: center;
+    grid-template-columns: repeat(13, 1fr);
+    gap: 8px;
+    margin: 8px 0;
+    min-height: 48px;
+}
+
+#guessing-head {
+    min-height: 0;
+}
+
+/* 猜对行：无整行边框与底衬 */
+.guessing-info.guessing-info--victory {
+    position: relative;
+    box-sizing: border-box;
+}
+
+.guessing-info.guessing-info--victory::before {
+    display: none;
+    content: none;
+}
+
+.guessing-info.guessing-info--victory>* {
+    position: relative;
+}
+
+/* 猜对行内「全对」格：保留实底，不再加外发光 */
+.guessing-info.guessing-info--victory .oper-item.oper-equal {
+    background: #71c9ff;
+    box-shadow: none;
+}
+
+.grid-cell {
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    border: 2px solid var(--ark-black-20);
+    border-radius: 8px;
+    background-color: var(--ark-black-03);
+    transition: all 0.3s ease;
+}
+
+/* 不同状态的单元格样式 */
+.grid-cell.empty {
+    background-color: var(--ark-black-03);
+}
+
+.grid-cell.filled {
+    background-color: var(--ark-black-08);
+    border-color: var(--ark-black-30);
+}
+
+.grid-cell.correct {
+    background-color: #538d4e;
+    /* 绿色表示位置和字符都正确 */
+    border-color: #538d4e;
+}
+
+.grid-cell.present {
+    background-color: #b59f3b;
+    /* 黄色表示字符存在但位置错误 */
+    border-color: #b59f3b;
+}
+
+.grid-cell.absent {
+    background-color: #3a3a3c;
+    /* 灰色表示字符不存在 */
+    border-color: #3a3a3c;
+}
+
+button {
+    border-radius: 0 6px 0 6px;
+}
+
+.btn-base {
+    position: relative;
+
+    padding: 0 24px;
+    height: 36px;
+    background-color: var(--btn-base);
+    color: #ffffff;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    align-self: center;
+
+    transition: all 0.2s ease;
+}
+
+.topic-mode-random .btn-base
+/* ,#btn-random-topic  */
+{
+    background-color: var(--btn-random);
+}
+
+#btn-daily-topic {
+    background-color: var(--btn-base);
+}
+
+.btn-base::after {
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 6px;
+    width: 100%;
+    height: 100%;
+    content: " ";
+    background-color: transparent;
+
+    transition: all 0.2s ease;
+}
+
+.btn-base:hover::after {
+    content: " ";
+    background-color: #0001;
+}
+
+.btn-base:active::after {
+    content: " ";
+    background-color: #0009;
+}
+
+
+/* 操作项样式 */
+.oper-item {
+    background-color: var(--ark-black-08);
+    border: 1px solid var(--ark-black-15);
+    border-radius: 8px;
+    padding: 0 6px;
+    text-align: center;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+}
+
+
+.guessing-info div {
+
+    width: 64px;
+    font-size: 12px;
+    /* 固定宽度 */
+    user-select: none;
+    /* 禁止内容被选择 */
+    -webkit-user-select: none;
+    /* 兼容webkit浏览器 */
+    -moz-user-select: none;
+    /* 兼容Firefox */
+    -ms-user-select: none;
+    /* 兼容IE/Edge */
+}
+
+.oper-equal {
+    background: var(--box-true);
+    box-shadow: none;
+}
+
+.oper-different,
+.oper-more,
+.oper-less {
+    background: var(--box-false);
+}
+
+/* 近似状态样式 */
+.oper-approximate {
+    background: var(--box-fuzzyA);
+    /* 介于相等与不同之间，使用柔和黄色强调 */
+}
+
+/* 近似状态样式 */
+.oper-fuzzy {
+    background: var(--box-fuzzyB);
+    /* 介于相等与不同之间，使用柔和黄色强调 */
+}
+
+.oper-item.oper-fuzzy,
+.oper-item.oper-approximate {
+    text-decoration-line: underline;
+    text-decoration-style: dashed;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--ark-black-42);
+}
+
+.oper-item.oper-fuzzy[data-fuzzy-detail="1"],
+.oper-item.oper-approximate[data-approx-detail="1"] {
+    position: relative;
+    cursor: help;
+}
+
+.oper-item.oper-fuzzy[data-fuzzy-detail="1"]::after,
+.oper-item.oper-approximate[data-approx-detail="1"]::after {
+    content: '?';
+    position: absolute;
+    top: 3px;
+    right: 4px;
+    z-index: 1;
+    width: 12px;
+    height: 12px;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 12px;
+    text-align: center;
+    border-radius: 0;
+    color: var(--ark-black-42);
+    background: transparent;
+    pointer-events: none;
+    text-decoration: none;
+    box-shadow: none;
+}
+
+@media (max-width: 768px) {
+
+    .oper-item.oper-fuzzy[data-fuzzy-detail="1"]::after,
+    .oper-item.oper-approximate[data-approx-detail="1"]::after {
+        top: 2px;
+        right: 2px;
+        width: 10px;
+        height: 10px;
+        font-size: 8px;
+        line-height: 10px;
+    }
+}
+
+#fuzzy-match-tooltip {
+    position: fixed;
+    z-index: 10001;
+    left: 0;
+    top: 0;
+    max-width: min(380px, calc(100vw - 20px));
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: #222;
+    background: var(--ark-tooltip-bg);
+    border: 1px solid var(--ark-black-14);
+    border-radius: 8px;
+    box-shadow: 0 6px 20px var(--ark-black-16);
+    pointer-events: none;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+}
+
+#fuzzy-match-tooltip.fuzzy-match-tooltip--visible {
+    visibility: visible;
+    opacity: 1;
+}
+
+#fuzzy-match-tooltip .fuzzy-match-tooltip-intro {
+    margin: 0 0 8px;
+}
+
+#fuzzy-match-tooltip .fuzzy-match-tooltip-select {
+    font-weight: 700;
+}
+
+#fuzzy-match-tooltip .fuzzy-match-tooltip-label {
+    margin: 0 0 4px;
+}
+
+#fuzzy-match-tooltip .fuzzy-match-tooltip-list {
+    margin: 0;
+    padding-left: 1.2em;
+    list-style: disc;
+}
+
+#fuzzy-match-tooltip .fuzzy-match-tooltip-list li {
+    margin: 3px 0;
+    padding-left: 2px;
+}
+
+#approx-match-tooltip {
+    position: fixed;
+    z-index: 10001;
+    left: 0;
+    top: 0;
+    max-width: min(380px, calc(100vw - 20px));
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: #222;
+    background: var(--ark-tooltip-bg);
+    border: 1px solid var(--ark-black-14);
+    border-radius: 8px;
+    box-shadow: 0 6px 20px var(--ark-black-16);
+    pointer-events: none;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+}
+
+#approx-match-tooltip.approx-match-tooltip--visible {
+    visibility: visible;
+    opacity: 1;
+}
+
+#approx-match-tooltip .approx-match-tooltip-intro {
+    margin: 0;
+}
+
+#approx-match-tooltip .approx-match-tooltip-em {
+    font-weight: 700;
+}
+
+.oper-more {
+    position: relative;
+}
+
+.oper-more:before {
+    content: '';
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 8px solid #000;
+}
+
+.oper-less {
+    position: relative;
+}
+
+.oper-less:before {
+    content: '';
+    position: absolute;
+    top: 80%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 8px solid #000;
+}
+
+/* 滚动容器：各宽度下在视口内纵向滚动猜测列表 */
+.scroll-container {
+    /* width: 100%; */
+    margin-right: 24px;
+    flex: 1 1 0%;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    position: relative;
+}
+
+/* 默认情况下guessing元素不滚动 */
+.guessing {
+    margin: 0 auto;
+    min-height: 30vh;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    width: 960px;
+    transition: transform 0.1s ease-out;
+    background: #0001;
+}
+
+/* 兔头模式关闭时仅 6 列，沿用 960px 会让各列被 1fr 拉得过宽 */
+body.rabbit-mode-off .guessing {
+    width: 440px;
+}
+
+
+/* 头部工具栏 */
+.top-tool {
+    position: absolute;
+    max-width: 768px;
+    height: 80px;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 24px;
+    z-index: 10;
+    justify-content: center;
+    align-items: center;
+}
+
+#tool-tutorial::before {
+    content: " ";
+    background-color: var(--title-cor);
+    mask: url('../resource/tool-1.svg');
+    mask-size: cover;
+    mask-position: center;
+    mask-repeat: no-repeat;
+    -webkit-mask: url('../resource/tool-1.svg');
+    -webkit-mask-size: cover;
+    -webkit-mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    width: 100%;
+    height: 100%;
+}
+
+.tool-item {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.tool-titlePlaceholder {
+    width: 160px;
+}
+
+#teaching {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: var(--ark-black-50);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+#teaching.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.teaching-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 20px 60px var(--ark-black-30);
+    max-width: 600px;
+    width: 90%;
+    height: 460px;
+    max-height: 80vh;
+    overflow: hidden;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+#teaching.show .teaching-content {
+    transform: scale(1) translateY(0);
+}
+
+.teaching-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 32px;
+    border-bottom: 1px solid #eee;
+    background: linear-gradient(135deg, #66dfea 20%, #d1cd82 80%, #d2d639 100%);
+    color: white;
+}
+
+.teaching-header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: white;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.close-btn:hover {
+    background-color: var(--ark-white-20);
+}
+
+.teaching-body {
+    padding: 32px;
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tutorial-step {
+    display: none;
+    animation: fadeIn 0.3s ease;
+    width: 100%;
+    max-width: 500px;
+}
+
+.tutorial-step.active {
+    display: block;
+}
+
+.tutorial-step h2 {
+    color: #333;
+    margin-bottom: 16px;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.tutorial-step p {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.tutorial-step ul {
+    color: #666;
+    line-height: 1.6;
+    padding-left: 20px;
+}
+
+.tutorial-step li {
+    margin-bottom: 8px;
+}
+
+.color-guide {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.color-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.color-box {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.color-box.correct {
+    background-color: var(--box-true);
+}
+
+.color-box.partialA {
+    background-color: var(--box-fuzzyA);
+}
+
+.color-box.partialB {
+    background-color: var(--box-fuzzyB);
+}
+
+.color-box.wrong {
+    background-color: var(--box-false);
+}
+
+.teaching-footer {
+    padding: 24px 32px;
+    border-top: 1px solid #eee;
+    background-color: #f8f9fa;
+}
+
+.step-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.step-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #ddd;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.step-dot.active {
+    background-color: #667eea;
+}
+
+.step-dot:hover {
+    background-color: #999;
+}
+
+.navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.nav-btn {
+    padding: 10px 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    color: #666;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.nav-btn:hover:not(:disabled) {
+    background-color: #f0f0f0;
+    border-color: #999;
+}
+
+.nav-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.nav-btn.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+}
+
+.nav-btn.primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--ark-nav-glow);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 响应式设计 - 宽度小于1200px时启用水平滚动 */
+@media (max-width: 1200px) {
+    .scroll-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: var(--ark-white-20) var(--ark-white-05);
+    }
+
+    .scroll-container::-webkit-scrollbar {
+        background-color: #000000;
+        height: 6px;
+    }
+
+    .scroll-container::-webkit-scrollbar-track {
+        background-color: #000000;
+        border-radius: 3px;
+    }
+
+    .scroll-container::-webkit-scrollbar-thumb {
+        background-color: #000000;
+        border-radius: 3px;
+    }
+
+    .scroll-container::-webkit-scrollbar-thumb:hover {
+        background-color: #000000;
+        border-radius: 3px;
+    }
+
+    .guessing {
+        margin: 0 auto;
+        cursor: grab;
+    }
+
+    .guessing:active {
+        cursor: grabbing;
+    }
+}
+
+/* 响应式设计 - 小屏幕适配：整页 100dvh，主内容区可伸缩，guessing 在 scroll-container 内纵向滚动/拖拽 */
+@media (max-width: 768px) {
+    :root {
+        --ark-titleSpace: 10px;
+        --ark-subSpace: 10px;
+        /* 与下方 .guessing-info 列数、gap、单元宽度一致，便于单独调手机表格总宽 */
+        --guessing-width-mobile: 686px;
+        --guessing-width-mobile-rabbit-off: 315px;
+    }
+
+    body {
+        align-items: stretch;
+    }
+
+    footer {
+        padding: 6px 0 8px;
+    }
+
+    .container {
+        padding: 6px 8px;
+    }
+
+    .input-section {
+        margin-top: 2px;
+        margin-bottom: 8px;
+        gap: 6px;
+    }
+
+    .logo {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 6px;
+    }
+
+    .title {
+        margin-top: 4px;
+        font-size: 1.75rem;
+    }
+
+    .sub-label {
+        font-size: 0.9rem;
+    }
+
+    /* 手机：主标题与中英副标同一行；header 内副标字距、缩进恢复默认 */
+    header .title,
+    header p.sub-label.head-font {
+        display: inline-block;
+        vertical-align: baseline;
+    }
+
+    header p.sub-label.head-font {
+        letter-spacing: normal;
+        text-indent: 0;
+        margin-top: 0;
+        margin-left: 0.4em;
+    }
+
+    .sub-info {
+        font-size: 0.6rem;
+    }
+
+    .grid-cell {
+        font-size: 1.2rem;
+    }
+
+    .scroll-container {
+        margin-right: 15px;
+        overflow-x: auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .guessing {
+        min-height: 0;
+        width: var(--guessing-width-mobile);
+    }
+
+    body.rabbit-mode-off .guessing {
+        width: var(--guessing-width-mobile-rabbit-off);
+    }
+
+    /* 猜测表格：更密的字号与间距 */
+    .guessing-item {
+        gap: 4px;
+        margin: 4px 0;
+    }
+
+    .guessing-info {
+        gap: 3px;
+        margin: 3px 0;
+        min-height: 30px;
+        /* 固定宽单元在 1fr 列内水平居中，表头与数据列对齐 */
+        justify-items: center;
+    }
+
+    .guessing-info div {
+        width: 50px;
+        max-width: 50px;
+        box-sizing: border-box;
+        font-size: 10px;
+        line-height: 1.2;
+    }
+
+    /* 表头行：与下方猜测行同宽，单元竖排且与列对齐 */
+    .guessing>.guessing-item {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    #guessing-head.guessing-info {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        min-height: 44px;
+        align-items: stretch;
+    }
+
+    /*
+     * 表头竖排：部分浏览器下 flex + writing-mode 竖排会失效，改用极窄盒 + 强制断行，
+     * 使每字独占一行（视觉上竖排），兼容性更好。
+     */
+    #guessing-head.guessing-info>.guessing-head {
+        display: block;
+        width: 0.88em;
+        max-width: 0.88em;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.22;
+        word-break: break-all;
+        overflow-wrap: anywhere;
+        text-align: center;
+        white-space: normal;
+        box-sizing: content-box;
+    }
+
+    .oper-item {
+        padding: 3px 3px;
+        min-height: 26px;
+        border-radius: 5px;
+        border-width: 1px;
+    }
+
+    .input-section-main {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+    }
+
+    .input-with-suggestions {
+        width: 100%;
+    }
+
+    #input-name {
+        width: 100%;
+    }
+
+    .buttons-container {
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .btn-base {
+        height: 30px;
+        padding: 0 14px;
+        font-size: 0.82rem;
+        border-radius: 5px;
+    }
+
+    .btn-rabbit-toggle {
+        height: 28px;
+        padding: 0 12px;
+        font-size: 0.78rem;
+    }
+
+    .btn-show-answer {
+        height: 28px;
+        padding: 0 12px;
+        font-size: 0.78rem;
+    }
+
+    #attempts {
+        font-size: 0.82rem;
+        margin: 2px 0;
+    }
+
+    #btn-random-topic {
+        margin: 2px 0;
+    }
+
+    .top-tool {
+        gap: 12px;
+    }
+
+    .tool-titlePlaceholder {
+        width: 110px;
+    }
+
+    /* 教程模态框移动端适配 */
+    .teaching-content {
+        width: 95%;
+        height: 65vh;
+        max-height: 85vh;
+    }
+
+    .teaching-header {
+        padding: 20px 24px;
+    }
+
+    .teaching-header h1 {
+        font-size: 1.15rem;
+    }
+
+    .teaching-body {
+        padding: 24px;
+    }
+
+    .tutorial-step h2 {
+        font-size: 1.2rem;
+    }
+
+    .tutorial-step p,
+    .tutorial-step li {
+        font-size: 0.9rem;
+    }
+
+    .teaching-footer {
+        padding: 20px 24px;
+    }
+
+    .navigation-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .nav-btn {
+        width: 100%;
+        padding: 8px 12px;
+        font-size: 0.82rem;
+    }
+}
+
+/* ---------- 每日通关：截图分享 ---------- */
+.btn-screenshot-share {
+    margin: 4px 0;
+    background: linear-gradient(135deg, #3db89a 0%, #2a9d7a 100%);
+}
+
+.btn-screenshot-share:hover::after {
+    background-color: #0001;
+}
+
+body.arkdle-share-modal-open,
+body.arkdle-changelog-modal-open {
+    overflow: hidden;
+}
+
+/* ---------- 更新日志：右侧入口 + 居中弹窗 ---------- */
+.arkdle-changelog-trigger {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 20;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    box-shadow: none;
+    font-size: 0.68rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    color: #9a9a9a;
+    cursor: pointer;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    line-height: 1.4;
+}
+
+.arkdle-changelog-trigger:hover,
+.arkdle-changelog-trigger--open {
+    color: #666;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.arkdle-changelog-trigger::after {
+    display: none;
+}
+
+.arkdle-changelog-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10040;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.arkdle-changelog-modal[hidden] {
+    display: none;
+}
+
+.arkdle-changelog-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: var(--ark-modal-backdrop);
+    backdrop-filter: blur(2px);
+}
+
+.arkdle-changelog-modal__panel {
+    position: relative;
+    z-index: 1;
+    width: min(560px, 100%);
+    max-height: min(88vh, 680px);
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 18px 48px var(--ark-black-18);
+    overflow: hidden;
+}
+
+.arkdle-changelog-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
+}
+
+.arkdle-changelog-modal__title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.arkdle-changelog-modal__close {
+    border: none;
+    background: transparent;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #64748b;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.arkdle-changelog-modal__close:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.arkdle-changelog-modal__body {
+    padding: 12px 20px 20px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+.arkdle-changelog-modal__loading,
+.arkdle-changelog-modal__error {
+    font-size: 0.88rem;
+    color: #64748b;
+    text-align: center;
+    margin: 24px 0;
+}
+
+.arkdle-changelog-modal__error {
+    color: #b91c1c;
+}
+
+.arkdle-changelog__h1 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 12px;
+}
+
+.arkdle-changelog__h2 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e40af;
+    margin: 18px 0 8px;
+}
+
+.arkdle-changelog__h2:first-child {
+    margin-top: 0;
+}
+
+.arkdle-changelog__h3 {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #475569;
+    margin: 10px 0 6px;
+    text-transform: none;
+}
+
+.arkdle-changelog__p {
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: #64748b;
+    margin: 0 0 8px;
+}
+
+.arkdle-changelog__list {
+    margin: 0 0 10px;
+    padding-left: 1.25em;
+    font-size: 0.8rem;
+    line-height: 1.55;
+    color: #334155;
+}
+
+.arkdle-changelog__list li {
+    margin-bottom: 4px;
+}
+
+.arkdle-changelog__list a {
+    color: #2563eb;
+    text-decoration: underline;
+}
+
+.arkdle-changelog__hr {
+    border: none;
+    border-top: 1px dashed #cbd5e1;
+    margin: 16px 0;
+}
+
+@media (max-width: 768px) {
+    .arkdle-changelog-trigger {
+        right: 8px;
+        font-size: 0.62rem;
+    }
+}
+
+.arkdle-share-capture-host {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: min(100vw, 980px);
+    margin-left: auto;
+    margin-right: auto;
+    padding: 16px 20px 22px;
+    background: #f6f8fb;
+    box-sizing: border-box;
+    font-family: inherit;
+    color: #333;
+}
+
+.arkdle-share-capture-host--offscreen {
+    position: fixed;
+    left: -9999px;
+    top: 0;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.arkdle-share-modal__layout-shell {
+    width: 100%;
+    padding: 12px;
+    pointer-events: auto;
+    margin: 0;
+    border-radius: 10px;
+    border: 1px solid #dbe4ee;
+    box-shadow: inset 0 0 0 1px #ffffff99;
+    box-sizing: border-box;
+    background: #f8fbff;
+}
+
+.arkdle-share-capture-host .scroll-container {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* 与主界面 .guessing-item 的 justify-items:center 不同：截图需每行表格同宽，表头与数据列对齐 */
+.arkdle-share-capture-host .guessing-item {
+    justify-items: stretch;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.arkdle-share-capture-host .guessing-info {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.arkdle-share-capture-host .guessing {
+    margin-left: auto;
+    margin-right: auto;
+    width: min(960px, 100%);
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+
+    /* 离屏截图容器：收窄左右留白，便于表格更接近满屏 */
+    .arkdle-share-capture-host {
+        padding: 12px 8px 16px;
+    }
+
+    .arkdle-share-capture-host .guessing {
+        width: min(686px, 100%);
+        max-width: 100%;
+    }
+
+    body.rabbit-mode-off .arkdle-share-capture-host .guessing {
+        width: min(315px, 100%);
+        max-width: 100%;
+    }
+
+    /* 表头竖排：与主界面窄屏同一策略（极窄盒 + 断行） */
+    .arkdle-share-capture-host .guessing-item.guessing-heads .guessing-info,
+    .arkdle-share-capture-host #guessing-head.guessing-info {
+        min-height: 44px;
+        align-items: stretch;
+    }
+
+    .arkdle-share-capture-host .guessing-info>.guessing-head {
+        display: block !important;
+        width: 0.88em !important;
+        max-width: 0.88em !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        font-size: 10px;
+        line-height: 1.22;
+        word-break: break-all !important;
+        overflow-wrap: anywhere !important;
+        text-align: center;
+        white-space: normal !important;
+        box-sizing: content-box !important;
+    }
+}
+
+.arkdle-share-capture-host>header {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.arkdle-share-sublabels {
+    text-align: center;
+    margin: 10px 0 14px;
+}
+
+.arkdle-share-sublabels .sub-label {
+    display: block;
+}
+
+.arkdle-share-footer-block {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--ark-black-10);
+    text-align: center;
+}
+
+.arkdle-share-footer-block .copyright,
+.arkdle-share-footer-block .creator-credit {
+    margin: 6px 0;
+}
+
+.arkdle-share-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.arkdle-share-modal[hidden] {
+    display: none;
+}
+
+.arkdle-share-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: var(--ark-modal-backdrop);
+    backdrop-filter: blur(2px);
+}
+
+.arkdle-share-modal__panel {
+    position: relative;
+    z-index: 1;
+    width: min(960px, 100%);
+    max-height: min(92vh, 720px);
+    overflow: auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 18px 48px var(--ark-black-18);
+    padding: 18px 20px 20px;
+}
+
+.arkdle-share-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.arkdle-share-modal__title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.arkdle-share-modal__close {
+    border: none;
+    background: transparent;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #64748b;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.arkdle-share-modal__close:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.arkdle-share-modal__hint {
+    font-size: 0.78rem;
+    color: #64748b;
+    line-height: 1.45;
+    margin: 0 0 10px;
+}
+
+.arkdle-share-modal__hint--compact {
+    margin-bottom: 8px;
+}
+
+.arkdle-share-modal__subhint {
+    margin: 0 0 10px;
+    font-size: 0.76rem;
+    color: #7b8794;
+    line-height: 1.45;
+}
+
+.arkdle-share-step {
+    margin-top: 4px;
+}
+
+.arkdle-share-modal__layout-wrap {
+    border-radius: 8px;
+    overflow: auto;
+    max-height: 52vh;
+    background: #f8fbff;
+    border: 1px solid #e2e8f0;
+}
+
+.arkdle-share-modal__layout-preview {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-width: fit-content;
+}
+
+.arkdle-share-picker-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 12px 0 16px;
+}
+
+.arkdle-share-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.arkdle-share-option:hover {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+}
+
+.arkdle-share-option input {
+    margin-top: 3px;
+    flex-shrink: 0;
+}
+
+.arkdle-share-option__text {
+    font-size: 0.8rem;
+    color: #475569;
+    line-height: 1.4;
+}
+
+.arkdle-share-btn-generate {
+    width: 100%;
+    margin-top: 4px;
+}
+
+.arkdle-share-modal .arkdle-share-btn-repick {
+    width: 100%;
+    margin-top: 12px;
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.arkdle-share-btn-repick:hover::after {
+    background-color: #0001;
+}
+
+.arkdle-share-modal__status {
+    min-height: 1.2em;
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-bottom: 8px;
+}
+
+.arkdle-share-modal__status--ok {
+    color: #15803d;
+}
+
+.arkdle-share-modal__preview-wrap {
+    border-radius: 8px;
+    overflow: auto;
+    max-height: 48vh;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    margin-top: 8px;
+}
+
+.arkdle-share-modal__preview {
+    display: block;
+    width: 100%;
+    height: auto;
+    vertical-align: top;
+}
+
+.arkdle-share-modal__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+    justify-content: center;
+}
+
+.arkdle-share-modal__actions--primary {
+    justify-content: flex-end;
+}
+
+.arkdle-share-modal__actions .btn-base {
+    flex: 1 1 auto;
+    min-width: 108px;
+    font-size: 0.85rem;
+    padding: 0 14px;
+    height: 34px;
+}
+
+@media (max-width: 480px) {
+    .arkdle-share-modal__actions {
+        flex-direction: column;
+    }
+
+    .arkdle-share-modal__actions .btn-base {
+        width: 100%;
+    }
+}
+
+:root {
+    --ark-question-green-22: #4ade8038;
+    --ark-question-green-35: #4ade8059;
+    --ark-question-teal-20: #2dd4bf33;
+}
+
+body.topic-mode-question {
+    background-color: color-mix(in srgb, #f0fdf4 70%, #ecfdf5 30%);
+    background-image:
+        radial-gradient(circle at 20% 30%, #86efac33 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, #6ee7b733 0%, transparent 50%);
+}
+
+body.topic-mode-question::before {
+    background-image: radial-gradient(circle, #4ade8022 2px, transparent 2px);
+}
+
+body.topic-mode-question::after {
+    opacity: 1;
+    background-image:
+        radial-gradient(circle at 14% 22%, #bbf7d038 0%, transparent 42%),
+        radial-gradient(circle at 88% 78%, #a7f3d033 0%, transparent 45%);
+}
+
+.arkdle-question-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.arkdle-question-overlay[hidden] {
+    display: none;
+}
+
+.arkdle-question-overlay__backdrop {
+    position: absolute;
+    inset: 0;
+    background: var(--ark-modal-backdrop);
+    backdrop-filter: blur(3px);
+}
+
+.arkdle-question-overlay__panel {
+    position: relative;
+    z-index: 1;
+    width: min(480px, 100%);
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px #0000002e, 0 0 0 1px #4ade8022;
+    padding: 32px 28px 28px;
+    text-align: center;
+    animation: arkdle-question-panel-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes arkdle-question-panel-in {
+    from {
+        opacity: 0;
+        transform: scale(0.88) translateY(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.arkdle-question-overlay__avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4ade80, #2dd4bf);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    margin: 0 auto 14px;
+    box-shadow: 0 4px 16px #4ade8040;
+}
+
+.arkdle-question-overlay__badge {
+    display: inline-block;
+    background: linear-gradient(90deg, #4ade80, #2dd4bf);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+}
+
+.arkdle-question-overlay__nickname {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 6px;
+}
+
+.arkdle-question-overlay__message {
+    font-size: 0.88rem;
+    color: #475569;
+    line-height: 1.6;
+    margin: 0 0 18px;
+    padding: 10px 14px;
+    background: #f0fdf4;
+    border-radius: 8px;
+    border-left: 3px solid #4ade80;
+}
+
+.arkdle-question-overlay__divider {
+    border: none;
+    border-top: 1px dashed #d1fae5;
+    margin: 0 0 16px;
+}
+
+.arkdle-question-overlay__topic-label {
+    font-size: 0.72rem;
+    color: #6b7280;
+    margin: 0 0 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.arkdle-question-overlay__topic {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #166534;
+    margin: 0 0 22px;
+}
+
+.arkdle-question-overlay__btn {
+    width: 100%;
+    height: 44px;
+    background: linear-gradient(90deg, #4ade80, #2dd4bf);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.1s ease;
+    box-shadow: 0 4px 16px #4ade8040;
+}
+
+.arkdle-question-overlay__btn:hover {
+    opacity: 0.9;
+}
+
+.arkdle-question-overlay__btn:active {
+    transform: scale(0.97);
+}
+
+.arkdle-question-overlay__progress {
+    font-size: 0.72rem;
+    color: #9ca3af;
+    margin-top: 12px;
+}
+
+.arkdle-question-hint-bar {
+    margin: 0 auto 8px;
+    max-width: 600px;
+    padding: 8px 14px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    color: #166534;
+    text-align: center;
+    display: none;
+}
+
+.arkdle-question-hint-bar.visible {
+    display: block;
+}
+
+#btn-random-topic.btn-question-mode-next {
+    background: linear-gradient(90deg, #4ade80, #2dd4bf);
+    color: #fff;
+}
+
+#btn-random-topic.btn-question-mode-next:hover::after {
+    background-color: #0001;
+}

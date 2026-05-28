@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>出题包编辑</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>出题包编辑</h1>
+    <p class="sub">左侧管理基础信息与数据操作，右侧编辑题目列表。<span id="editBadge" class="badge">编辑模式</span></p>
+
+    <div class="layout-2col">
+      <aside class="card col-left">
+        <h2>基础信息</h2>
+
+        <label for="authorNickname">出题人昵称</label>
+        <input id="authorNickname" type="text" placeholder="昵称">
+
+        <label for="shareKey">分享 Key <span class="hint">（留空则 MD5，自定义 ≥4 字）</span></label>
+        <input id="shareKey" type="text" placeholder="自定义分享标识，可选" autocomplete="off">
+        <div id="keyCheckHint" class="key-check-hint muted" aria-live="polite"></div>
+
+        <label for="authorMessage">出题人寄语</label>
+        <textarea id="authorMessage" placeholder="给玩家的寄语…"></textarea>
+
+        <h3>数据操作</h3>
+        <p class="op-hint">下载从服务器按 Key 载入；检查 Key 是否已被占用。</p>
+
+        <div class="btn-group">
+          <div class="row">
+            <button type="button" class="block" id="btnCheckKey">检测 Key 是否可用</button>
+            <button type="button" class="block" id="btnCreate">保存上传到服务器</button>
+            <button type="button" class="block secondary" id="btnSample">填入示例</button>
+          </div>
+          <div class="input-row">
+            <input id="loadKey" type="text" placeholder="Key / MD5 下载载入" autocomplete="off" spellcheck="false">
+            <button type="button" class="secondary" id="btnReadToEdit">读取到当前编辑</button>
+          </div>
+        </div>
+        <div id="opResult" class="result" style="display:none"></div>
+      </aside>
+
+      <section class="card col-right">
+        <div class="col-right-header">
+          <h2>题目列表</h2>
+          <button type="button" class="secondary btn-sm" id="btnAddQuestion">+ 添加题目</button>
+        </div>
+        <div class="questions-scroll" id="questionsContainer"></div>
+      </section>
+    </div>
+
+    <section id="editPanel" class="card">
+      <h2>全部记录
+        <button type="button" class="secondary btn-sm-inline" id="btnRefreshList">刷新</button>
+      </h2>
+      <div id="listContainer">
+        <p class="empty">加载中…</p>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/operator_input.js"></script>
+  <script src="js/main.js" defer></script>
+</body>
+
+</html>

@@ -1,0 +1,19 @@
+/* 字体加载与应用 */
+@font-face {
+  font-family: 'FZCYSJT';
+  src: url('../resource/fzcysjt.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  /* 避免首屏空白 */
+}
+
+:root {
+  --arkdle-font: 'FZCYSJT', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+}
+
+/* 覆盖主样式的字体设置（该文件在 main.css 之后引入） */
+h1,
+.head-font {
+  font-family: var(--arkdle-font);
+}
