@@ -26,11 +26,6 @@
                 modal: root.getElementById('teaching'),
                 openBtn: root.getElementById('tool-tutorial'),
                 closeBtn: root.getElementById('close-teaching'),
-                prevBtn: root.getElementById('prev-step'),
-                nextBtn: root.getElementById('next-step'),
-                startBtn: root.getElementById('start-game'),
-                steps: root.querySelectorAll('.tutorial-step'),
-                stepDots: root.querySelectorAll('.step-dot'),
             };
             this._bound = false;
         }
@@ -81,88 +76,9 @@
         }
 
         /**
-         * 渲染指定步骤的内容和指示器
+         * 绑定模态框点击事件
          * 
-         * 两个视图元素的同步渲染：
-         * 1. 步骤内容（.tutorial-step）：当前步骤显示active，其余隐藏
-         * 2. 步骤指示器（.step-dot）：当前步骤的圆点高亮，其余熄灭
-         * 
-         * 实现原理：
-         * - 使用classList.add/remove切换CSS类
-         * - active类由CSS定义显示/隐藏逻辑
-         * - 这样可以保持样式与逻辑分离
-         * 
-         * @param {number} currentStep - 当前步骤编号（1-based）
-         * @param {number} totalSteps - 总步数
-         */
-        renderStep(currentStep, totalSteps) {
-            const { steps, stepDots } = this.els;
-
-            // 渲染步骤内容
-            // forEach中index是0-based，需要+1与currentStep进行比较
-            if (steps) {
-                steps.forEach((step, index) => {
-                    const stepNumber = index + 1;
-                    if (stepNumber === currentStep) {
-                        step.classList.add('active');
-                    } else {
-                        step.classList.remove('active');
-                    }
-                });
-            }
-
-            // 渲染步骤指示器（底部的小圆点）
-            if (stepDots) {
-                stepDots.forEach((dot, index) => {
-                    const stepNumber = index + 1;
-                    if (stepNumber === currentStep) {
-                        dot.classList.add('active');
-                    } else {
-                        dot.classList.remove('active');
-                    }
-                });
-            }
-        }
-
-        /**
-         * 更新导航按钮状态
-         * 
-         * 根据当前步骤调整按钮显示逻辑：
-         * - 上一步按钮：在第一步时禁用（disabled），防止越界
-         * - 下一步按钮和开始游戏按钮：在最后一步时隐藏下一步，显示开始游戏
-         * 
-         * 设计决策：
-         * - 使用display控制按钮显示/隐藏，而不是启用/禁用
-         * - 这样可以实现"下一步"和"开始游戏"按钮的无缝替换
-         * - 用户体验更流畅，不会出现按钮禁用带来的困惑
-         * 
-         * @param {number} currentStep - 当前步骤编号
-         * @param {number} totalSteps - 总步数
-         */
-        updateNavigation(currentStep, totalSteps) {
-            const { prevBtn, nextBtn, startBtn } = this.els;
-
-            // 第一步时禁用上一步按钮
-            if (prevBtn) {
-                prevBtn.disabled = currentStep === 1;
-            }
-
-            // 最后一步时隐藏下一步，显示开始游戏
-            if (currentStep === totalSteps) {
-                if (nextBtn) nextBtn.style.display = 'none';
-                if (startBtn) startBtn.style.display = 'block';
-            } else {
-                if (nextBtn) nextBtn.style.display = 'block';
-                if (startBtn) startBtn.style.display = 'none';
-            }
-        }
-
-        /**
-         * 绑定模态框点击事件（可选方法）
-         * 
-         * 当前未被Controller调用，因为我们希望Controller主动控制关闭逻辑
-         * 保留此方法是为了后续可能的扩展需求（如外部点击关闭）
-         * 
+         * 当用户点击模态框背景时关闭教程，提供更好的用户体验
          * 使用防重复绑定（_bound标志）确保同一View实例只绑定一次
          * 
          * @param {Function} callback - 点击背景时的回调函数
@@ -172,6 +88,7 @@
             if (!modal) return;
 
             const handler = (e) => {
+                // 只在点击背景（modal本身）时触发，不包括内容区域
                 if (e.target === modal) {
                     callback();
                 }

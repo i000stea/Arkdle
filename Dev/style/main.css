@@ -513,7 +513,7 @@ footer>* {
 }
 
 button {
-    border-radius: 0 6px 0 6px;
+    border-radius: 0 6px;
 }
 
 .btn-base {
@@ -532,8 +532,9 @@ button {
 }
 
 .topic-mode-random .btn-base
+
 /* ,#btn-random-topic  */
-{
+    {
     background-color: var(--btn-random);
 }
 
@@ -827,11 +828,11 @@ body.rabbit-mode-off .guessing {
 #tool-tutorial::before {
     content: " ";
     background-color: var(--title-cor);
-    mask: url('../resource/tool-1.svg');
+    mask: url('../../resource/tool-1.svg');
     mask-size: cover;
     mask-position: center;
     mask-repeat: no-repeat;
-    -webkit-mask: url('../resource/tool-1.svg');
+    -webkit-mask: url('../../resource/tool-1.svg');
     -webkit-mask-size: cover;
     -webkit-mask-position: center;
     -webkit-mask-repeat: no-repeat;
@@ -848,12 +849,19 @@ body.rabbit-mode-off .guessing {
     justify-content: center;
     font-weight: 700;
     line-height: 1;
+    cursor: pointer;
 }
 
 .tool-titlePlaceholder {
     width: 160px;
 }
 
+/**
+ * 教程模态框样式
+ * 基于MVC架构中的View层样式设计
+ */
+
+/* 教程背景遮罩层 - 固定定位覆盖全屏 */
 #teaching {
     position: fixed;
     top: 0;
@@ -869,33 +877,40 @@ body.rabbit-mode-off .guessing {
     justify-content: center;
     opacity: 0;
     visibility: hidden;
+    pointer-events: none;
     transition: all 0.3s ease;
 }
 
+/* 教程显示状态 - 启用点击事件 */
 #teaching.show {
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
 }
 
+/* 教程内容容器 - 白色卡片样式 */
 .teaching-content {
     background: white;
     border-radius: 8px;
     box-shadow: 0 20px 60px var(--ark-black-30);
     max-width: 600px;
     width: 90%;
-    height: 460px;
+    height: 80vh;
     max-height: 80vh;
     overflow: hidden;
     transform: scale(0.9) translateY(20px);
     transition: transform 0.3s ease;
     display: flex;
     flex-direction: column;
+    pointer-events: auto;
 }
 
+/* 显示状态的动画效果 */
 #teaching.show .teaching-content {
     transform: scale(1) translateY(0);
 }
 
+/* 教程头部 - 渐变背景 */
 .teaching-header {
     display: flex;
     justify-content: space-between;
@@ -906,12 +921,14 @@ body.rabbit-mode-off .guessing {
     color: white;
 }
 
+/* 教程标题 */
 .teaching-header h1 {
     margin: 0;
     font-size: 1.8rem;
     font-weight: 600;
 }
 
+/* 关闭按钮 */
 .close-btn {
     background: none;
     border: none;
@@ -932,26 +949,23 @@ body.rabbit-mode-off .guessing {
     background-color: var(--ark-white-20);
 }
 
+/* 教程主体 - 支持纵向滚动 */
 .teaching-body {
     padding: 32px;
     flex: 1;
     overflow-y: auto;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
 }
 
+/* 教程步骤 - 全显示模式 */
 .tutorial-step {
-    display: none;
-    animation: fadeIn 0.3s ease;
-    width: 100%;
-    max-width: 500px;
-}
-
-.tutorial-step.active {
     display: block;
+    width: 100%;
+    max-width: 100%;
 }
 
+/* 步骤标题 */
 .tutorial-step h2 {
     color: #333;
     margin-bottom: 16px;
@@ -959,12 +973,22 @@ body.rabbit-mode-off .guessing {
     font-weight: 600;
 }
 
+/* 教程分隔线 - 横线分章节 */
+.tutorial-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #ddd, transparent);
+    border: none;
+    margin: 32px 0;
+}
+
+/* 步骤段落文本 */
 .tutorial-step p {
     color: #666;
     line-height: 1.6;
     margin-bottom: 12px;
 }
 
+/* 步骤列表样式 */
 .tutorial-step ul {
     color: #666;
     line-height: 1.6;
@@ -975,6 +999,7 @@ body.rabbit-mode-off .guessing {
     margin-bottom: 8px;
 }
 
+/* 颜色提示指南容器 */
 .color-guide {
     display: flex;
     flex-direction: column;
@@ -982,12 +1007,14 @@ body.rabbit-mode-off .guessing {
     margin-top: 16px;
 }
 
+/* 颜色提示项 */
 .color-item {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
+/* 颜色提示方块 */
 .color-box {
     width: 24px;
     height: 24px;
@@ -995,100 +1022,24 @@ body.rabbit-mode-off .guessing {
     border: 1px solid #ddd;
 }
 
+/* 绿色 - 完全正确 */
 .color-box.correct {
     background-color: var(--box-true);
 }
 
+/* 黄色 - 数值部分接近 */
 .color-box.partialA {
     background-color: var(--box-fuzzyA);
 }
 
+/* 橙色 - 势力或种族部分模糊接近 */
 .color-box.partialB {
     background-color: var(--box-fuzzyB);
 }
 
+/* 灰色 - 完全错误 */
 .color-box.wrong {
     background-color: var(--box-false);
-}
-
-.teaching-footer {
-    padding: 24px 32px;
-    border-top: 1px solid #eee;
-    background-color: #f8f9fa;
-}
-
-.step-indicators {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 20px;
-}
-
-.step-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background-color: #ddd;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.step-dot.active {
-    background-color: #667eea;
-}
-
-.step-dot:hover {
-    background-color: #999;
-}
-
-.navigation-buttons {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.nav-btn {
-    padding: 10px 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background: white;
-    color: #666;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-}
-
-.nav-btn:hover:not(:disabled) {
-    background-color: #f0f0f0;
-    border-color: #999;
-}
-
-.nav-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.nav-btn.primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-}
-
-.nav-btn.primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px var(--ark-nav-glow);
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 /* 响应式设计 - 宽度小于1200px时启用水平滚动 */
@@ -1296,7 +1247,7 @@ body.rabbit-mode-off .guessing {
         height: 30px;
         padding: 0 14px;
         font-size: 0.82rem;
-        border-radius: 5px;
+        border-radius: 0 4px;
     }
 
     .btn-rabbit-toggle {
@@ -1322,6 +1273,7 @@ body.rabbit-mode-off .guessing {
 
     .top-tool {
         gap: 12px;
+        height: auto;
     }
 
     .tool-titlePlaceholder {
@@ -1329,9 +1281,14 @@ body.rabbit-mode-off .guessing {
     }
 
     /* 教程模态框移动端适配 */
+    #teaching.show {
+        pointer-events: auto;
+    }
+
+    /* 教程内容容器 - 移动端高度调整 */
     .teaching-content {
         width: 95%;
-        height: 65vh;
+        height: 85vh;
         max-height: 85vh;
     }
 
@@ -1339,6 +1296,7 @@ body.rabbit-mode-off .guessing {
         padding: 20px 24px;
     }
 
+    /* 教程标题 - 移动端字体调整 */
     .teaching-header h1 {
         font-size: 1.15rem;
     }
@@ -1347,28 +1305,15 @@ body.rabbit-mode-off .guessing {
         padding: 24px;
     }
 
+    /* 教程步骤标题 - 移动端字体调整 */
     .tutorial-step h2 {
         font-size: 1.2rem;
     }
 
+    /* 教程段落和列表 - 移动端字体调整 */
     .tutorial-step p,
     .tutorial-step li {
         font-size: 0.9rem;
-    }
-
-    .teaching-footer {
-        padding: 20px 24px;
-    }
-
-    .navigation-buttons {
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .nav-btn {
-        width: 100%;
-        padding: 8px 12px;
-        font-size: 0.82rem;
     }
 }
 

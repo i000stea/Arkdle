@@ -6,7 +6,7 @@
      * 
      * 设计理念：
      * - 采用MVC架构中的Controller角色，负责协调Model和View之间的数据流
-     * - Controller是唯一知道Model和View的"中介"，但两者之间不直接通信
+     * - Controller是唯一知道Model和View的"中介"，但二者之间不直接通信
      * - 所有用户交互事件由Controller接收，转换为Model状态变更
      * 
      * 架构原则：
@@ -54,29 +54,19 @@
                 // 这样可以避免在currentStep变化时重复触发显示
                 if (evt.detail.changedKeys.includes('visible')) {
                     if (state.visible) {
-                        // 显示教程时，需要同时渲染步骤和导航按钮
-                        // 原因是从display:none切换到显示时，需要重新应用样式
+                        // 显示教程时，只需调用View.show()即可
+                        // 教程内容现在全显示，不再需要步骤切换
                         this.view.show();
-                        this.view.renderStep(state.currentStep, state.totalSteps);
-                        this.view.updateNavigation(state.currentStep, state.totalSteps);
                     } else if (!state.visible && this.view.els.modal?.classList.contains('show')) {
                         this.view.hide();
                     }
-                }
-
-                // 当步骤变化时，只更新步骤内容和导航按钮
-                // 不会触发显示/隐藏逻辑
-                if (evt.detail.changedKeys.includes('currentStep')) {
-                    this.view.renderStep(state.currentStep, state.totalSteps);
-                    this.view.updateNavigation(state.currentStep, state.totalSteps);
                 }
             });
 
             // 绑定所有用户交互事件
             this.bindOpenButton();
             this.bindCloseButton();
-            this.bindNavigationButtons();
-            this.bindStepDots();
+            this.bindModalClick();
             this.bindEscapeKey();
             
             // 检查是否需要自动弹出教程
@@ -97,7 +87,7 @@
             if (!btn) return;
 
             btn.addEventListener('click', () => {
-                this.model.patch({ visible: true, currentStep: 1 });
+                this.model.open();
             });
         }
 
@@ -121,58 +111,14 @@
         }
 
         /**
-         * 绑定导航按钮事件
+         * 绑定模态框背景点击事件
          * 
-         * 三个导航按钮的行为：
-         * - 上一步（prev-step）：调用Model.prevStep()切换到上一个步骤
-         * - 下一步（next-step）：调用Model.nextStep()切换到下一个步骤
-         * - 开始游戏（start-game）：关闭教程并标记已显示
-         * 
-         * 设计决策：
-         * - 点击开始游戏按钮时，不需要重置步骤，因为用户已经在最后一步
-         * - 三个按钮都通过Model变更驱动View更新，保持单一数据源
+         * 当用户点击教程弹窗背景时关闭教程，提供更好的用户体验
          */
-        bindNavigationButtons() {
-            const prevBtn = this.view.els.prevBtn;
-            const nextBtn = this.view.els.nextBtn;
-            const startBtn = this.view.els.startBtn;
-
-            if (prevBtn) {
-                prevBtn.addEventListener('click', () => {
-                    this.model.prevStep();
-                });
-            }
-
-            if (nextBtn) {
-                nextBtn.addEventListener('click', () => {
-                    this.model.nextStep();
-                });
-            }
-
-            if (startBtn) {
-                startBtn.addEventListener('click', () => {
-                    this.model.close();
-                    this.model.markTutorialShown();
-                });
-            }
-        }
-
-        /**
-         * 绑定步骤指示器点击事件
-         * 
-         * 步骤指示器（底部的小圆点）允许用户直接跳转到指定步骤
-         * 这是一种"随机访问"导航方式，与顺序导航（上下步）不同
-         * 
-         * 实现：通过index+1得到步骤编号，调用model.goToStep()
-         */
-        bindStepDots() {
-            const dots = this.view.els.stepDots;
-            if (!dots) return;
-
-            dots.forEach((dot, index) => {
-                dot.addEventListener('click', () => {
-                    this.model.goToStep(index + 1);
-                });
+        bindModalClick() {
+            this.view.bindModalClick(() => {
+                this.model.close();
+                this.model.markTutorialShown();
             });
         }
 
@@ -286,7 +232,7 @@
      * - 其他模块需要引导用户查看教程
      */
     window.openTutorial = function() {
-        if (window.arkdleTutorialController && window.arkdleTutorialModel) {
+        if (window.arkdleTutorialModel) {
             window.arkdleTutorialModel.open();
         }
     };
